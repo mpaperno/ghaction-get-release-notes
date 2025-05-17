@@ -10,7 +10,7 @@ if (process.env["GITHUB_ACTIONS"]) {
     try { core = require('@actions/core'); }
     catch(e) {
         try {
-            require("child_process").execSync("npm install --no-audit --silent @actions/core")
+            require("child_process").execSync("npm install -g --no-audit --silent @actions/core")
             core = require('@actions/core');
         }
         catch {
