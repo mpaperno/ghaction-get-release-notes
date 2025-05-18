@@ -29,12 +29,14 @@ const debug = function (...args) {
         console.debug(...args);
 }
 
-async function extractReleaseNotes(changelog, tag, order_asc)
+async function extractReleaseNotes(changelog, tag, order_asc, heading_lvl)
 {
     const findLatest = tag == "latest",
-        vlineRegEx = /^#+ .*/,
-        tagRegEx = findLatest ? vlineRegEx : new RegExp("^#+ .*" + tag.replace(/[+.-]/g, '\\$&'));
+        vlineReStr = "^" + '#'.repeat(heading_lvl) + "\\s+.*",
+        vlineRegEx = new RegExp(vlineReStr),
+        tagRegEx = findLatest ? vlineRegEx : new RegExp(vlineReStr + tag.replace(/[+.-]/g, '\\$&'));
 
+    debug(vlineReStr, vlineRegEx, tagRegEx);
     let heading = "",
         capture = false,
         lines = [];
@@ -92,6 +94,7 @@ async function main()
         changelog = "./CHANGELOG.md",
         order_asc = false,
         fallback = false,
+        heading_lvl = 2,
         output = "-";
 
     if (core) {
@@ -100,6 +103,7 @@ async function main()
         order_asc = core.getBooleanInput('changelog_ascending');
         fallback = core.getBooleanInput('fallback_to_latest');
         output = core.getInput('output_file');
+        heading_lvl = parseInt(core.getInput('heading_level', {required: true}));
     }
     else {
         // Handle CLI arguments
@@ -110,19 +114,21 @@ async function main()
             else if (arg == "-o") output = process.argv[++i];
             else if (arg == "-a") order_asc = true;
             else if (arg == "-f") fallback = true;
+            else if (arg == "-l") heading_lvl = parseInt(process.argv[++i]);
         }
     }
 
     debug(`<< version_tag = '${tag}'`);
     debug(`<< changelog_file = '${changelog}'`);
-    debug(`<< changelog_ascending = '${order_asc}'`);
-    debug(`<< fallback_to_latest = '${fallback}'`);
+    debug(`<< heading_level = ${heading_lvl}`);
+    debug(`<< changelog_ascending = ${order_asc}`);
+    debug(`<< fallback_to_latest = ${fallback}`);
     debug(`<< output_file = '${output}'`);
 
-    let {heading, releaseNotes} = await extractReleaseNotes(changelog, tag, order_asc);
+    let {heading, releaseNotes} = await extractReleaseNotes(changelog, tag, order_asc, heading_lvl);
     if (!heading && fallback && tag !== "latest") {
         debug("Tagged release notes not found, falling back to latest version.");
-        ({heading, releaseNotes} = await extractReleaseNotes(changelog, "latest", order_asc));
+        ({heading, releaseNotes} = await extractReleaseNotes(changelog, "latest", order_asc, heading_lvl));
     }
 
     debug(`>> release_title = '${heading}'`);

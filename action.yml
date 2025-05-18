@@ -8,15 +8,19 @@ branding:
 inputs:
   version_tag:
     description:
-      'The version tag to look for, as it appears in headings (eg. "v1.2.3-beta2"), or "latest" (default) to get the latest notes.'
+      'The version tag to look for, as it appears in headings (eg. "v1.2.3-beta2"), or "latest" (default) to get the latest notes. The tag is expected to be on a heading line with one or more leading "#" signs followed by a space. The heading level to look for can be set in the `heading_level` argument.'
     required: false
     default: 'latest'
   changelog_file:
-    description: 'The input path of the changelog file. Default: .`CHANGELOG.md`'
+    description: 'The input path of the changelog file. Default: `./CHANGELOG.md`'
     required: false
     default: './CHANGELOG.md'
+  heading_level:
+    description: 'The heading level (number of "#") marking each new version description. Default is 2.'
+    required: false
+    default: 2
   changelog_ascending:
-    description: 'Specify that the change log lists changes in ascending order, newest at end. Default is false, latest release at top.'
+    description: 'Specify that the change log shows changes in ascending order, newest version at end. Default is false, latest release at top.'
     required: false
     default: false
   fallback_to_latest:
@@ -29,7 +33,7 @@ inputs:
     default: ''
 outputs:
   release_title:
-    description: 'The full heading line with version number. The leading "## " will be stripped and the result trimmed.'
+    description: 'The full heading line with version number. The leading heading marks ("#") will be stripped and the result trimmed.'
   release_notes:
     description: 'The release notes body for found version.'
 runs:
